@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
   const titleFontSize = displayTitle.length > 35 ? 56 : displayTitle.length > 20 ? 68 : 80;
 
   // Build fonts array
-  const fonts: { name: string; data: ArrayBuffer; style: 'normal'; weight: number }[] = [];
+  const fonts: { name: string; data: ArrayBuffer; style: 'normal'; weight: 400 | 700 }[] = [];
   if (fontRegular) {
     fonts.push({ name: 'Noto Sans SC', data: fontRegular, style: 'normal', weight: 400 });
   }

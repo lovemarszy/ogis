@@ -126,20 +126,39 @@ export async function GET(request: NextRequest) {
   const icon = searchParams.get('icon') || '';
   const avatar = searchParams.get('avatar') || '';
 
-  // Validate image URLs - check if they look valid
+  // Validate image URLs - check if they look valid and are supported formats
   const isValidUrl = (url: string) => {
     if (!url) return false;
     try {
-      new URL(url);
-      return url.startsWith('http://') || url.startsWith('https://');
+      const parsed = new URL(url);
+      // Must be http/https
+      if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+      // URL must not be truncated (check for common truncation patterns)
+      if (url.endsWith('…') || url.endsWith('...') || url.length < 20) return false;
+      return true;
     } catch {
       return false;
     }
   };
 
-  const validIcon = isValidUrl(icon) ? icon : '';
-  const validAvatar = isValidUrl(avatar) ? avatar : '';
-  const validImage = isValidUrl(image) ? image : '';
+  // Check if image format is supported by @vercel/og (WebP is NOT supported)
+  const isSupportedImageFormat = (url: string) => {
+    if (!url) return false;
+    const lowerUrl = url.toLowerCase();
+    // WebP is not supported by @vercel/og
+    if (lowerUrl.includes('.webp')) return false;
+    // Check for supported formats
+    const supportedExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
+    // If URL has a clear extension, check it
+    const hasExtension = supportedExtensions.some(ext => lowerUrl.includes(ext));
+    // For URLs without clear extensions (like Unsplash), assume they're okay
+    // unless they explicitly have .webp
+    return hasExtension || !lowerUrl.match(/\.(webp|avif|svg|bmp|tiff?)(\?|$)/i);
+  };
+
+  const validIcon = isValidUrl(icon) && isSupportedImageFormat(icon) ? icon : '';
+  const validAvatar = isValidUrl(avatar) && isSupportedImageFormat(avatar) ? avatar : '';
+  const validImage = isValidUrl(image) && isSupportedImageFormat(image) ? image : '';
 
   // Sanitize text inputs
   const title = sanitizeText(rawTitle);

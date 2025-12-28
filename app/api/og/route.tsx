@@ -66,11 +66,14 @@ const defaultBackgrounds: Record<string, string> = {
 };
 
 // Load Noto Sans SC with full Unicode support (Regular weight)
+// Using Google Fonts subset which is smaller and faster
 async function loadNotoSansRegular(): Promise<ArrayBuffer | null> {
   try {
-    // Use a more complete Noto Sans SC font file
-    const fontUrl = 'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-sc@latest/chinese-simplified-400-normal.woff2';
-    const response = await fetch(fontUrl);
+    // Google Fonts API - smaller subset
+    const fontUrl = 'https://fonts.gstatic.com/s/notosanssc/v37/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG9_FnYxNbPzS5HE.woff2';
+    const response = await fetch(fontUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    });
     if (!response.ok) return null;
     return await response.arrayBuffer();
   } catch {
@@ -81,8 +84,10 @@ async function loadNotoSansRegular(): Promise<ArrayBuffer | null> {
 // Load Noto Sans SC Bold
 async function loadNotoSansBold(): Promise<ArrayBuffer | null> {
   try {
-    const fontUrl = 'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-sc@latest/chinese-simplified-700-normal.woff2';
-    const response = await fetch(fontUrl);
+    const fontUrl = 'https://fonts.gstatic.com/s/notosanssc/v37/k3kXo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG9_EnYxNbPzS5HE.woff2';
+    const response = await fetch(fontUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    });
     if (!response.ok) return null;
     return await response.arrayBuffer();
   } catch {

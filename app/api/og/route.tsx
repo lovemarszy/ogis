@@ -3,73 +3,56 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-// Theme configurations - lighter overlays to show more of the background image
+// Attegi-style theme configurations
 const themes: Record<string, {
-  overlay: string;
-  textColor: string;
-  subtextColor: string;
-  accentColor: string;
+  // Background colors
+  bgMain: string;
+  bgSecondary: string;
+  bgContrast: string;
+  // Text colors
+  textLead: string;
+  textMain: string;
+  textSecondary: string;
+  // Card styling
+  cardBg: string;
+  cardBorder: string;
+  // Tag chip
   tagBg: string;
+  tagText: string;
+  // Accent (for highlights)
+  accent: string;
 }> = {
   dark: {
-    overlay: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.75) 100%)',
-    textColor: '#ffffff',
-    subtextColor: 'rgba(255,255,255,0.85)',
-    accentColor: 'rgba(255,255,255,0.7)',
-    tagBg: 'rgba(255,255,255,0.2)',
+    bgMain: '#1D1F21',
+    bgSecondary: '#25282D',
+    bgContrast: '#353A40',
+    textLead: '#F6F7FA',
+    textMain: '#E2E6EB',
+    textSecondary: '#B6BBC4',
+    cardBg: 'rgba(37, 40, 45, 0.95)',
+    cardBorder: 'rgba(53, 58, 64, 0.8)',
+    tagBg: 'rgba(255, 255, 255, 0.08)',
+    tagText: '#B6BBC4',
+    accent: '#6366f1',
   },
   light: {
-    overlay: 'linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.5) 40%, rgba(255,255,255,0.9) 100%)',
-    textColor: '#1a1a1a',
-    subtextColor: 'rgba(0,0,0,0.75)',
-    accentColor: 'rgba(0,0,0,0.6)',
-    tagBg: 'rgba(0,0,0,0.1)',
+    bgMain: '#FFFFFF',
+    bgSecondary: '#F7F8FA',
+    bgContrast: '#E1E3E6',
+    textLead: '#000000',
+    textMain: '#374151',
+    textSecondary: '#73777D',
+    cardBg: 'rgba(255, 255, 255, 0.95)',
+    cardBorder: 'rgba(225, 227, 230, 0.8)',
+    tagBg: 'rgba(0, 0, 0, 0.05)',
+    tagText: '#73777D',
+    accent: '#6366f1',
   },
-  sunset: {
-    overlay: 'linear-gradient(135deg, rgba(255,100,50,0.4) 0%, rgba(150,50,150,0.5) 50%, rgba(50,50,100,0.7) 100%)',
-    textColor: '#ffffff',
-    subtextColor: 'rgba(255,255,255,0.9)',
-    accentColor: 'rgba(255,200,150,0.95)',
-    tagBg: 'rgba(255,255,255,0.25)',
-  },
-  ocean: {
-    overlay: 'linear-gradient(135deg, rgba(0,50,100,0.4) 0%, rgba(0,100,150,0.5) 50%, rgba(0,50,80,0.7) 100%)',
-    textColor: '#ffffff',
-    subtextColor: 'rgba(255,255,255,0.9)',
-    accentColor: 'rgba(100,200,255,0.95)',
-    tagBg: 'rgba(255,255,255,0.2)',
-  },
-  aurora: {
-    overlay: 'linear-gradient(135deg, rgba(0,100,100,0.4) 0%, rgba(50,0,100,0.5) 50%, rgba(20,20,60,0.7) 100%)',
-    textColor: '#ffffff',
-    subtextColor: 'rgba(255,255,255,0.9)',
-    accentColor: 'rgba(0,255,200,0.95)',
-    tagBg: 'rgba(255,255,255,0.2)',
-  },
-  minimal: {
-    overlay: 'linear-gradient(to bottom, rgba(20,20,25,0.2) 0%, rgba(20,20,25,0.5) 40%, rgba(20,20,25,0.85) 100%)',
-    textColor: '#ffffff',
-    subtextColor: 'rgba(255,255,255,0.8)',
-    accentColor: 'rgba(255,255,255,0.6)',
-    tagBg: 'rgba(255,255,255,0.15)',
-  },
-};
-
-// Default background when no image provided
-const defaultBackgrounds: Record<string, string> = {
-  dark: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
-  light: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 50%, #d1d5db 100%)',
-  sunset: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 25%, #ff4757 50%, #c44569 75%, #574b90 100%)',
-  ocean: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 25%, #0096c7 50%, #023e8a 75%, #03045e 100%)',
-  aurora: 'linear-gradient(135deg, #00d9ff 0%, #00ff87 25%, #7b2cbf 50%, #3a0ca3 75%, #0a0a1a 100%)',
-  minimal: 'linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 50%, #0d0d0d 100%)',
 };
 
 // Load Noto Sans SC with full Unicode support (Regular weight)
-// Using Google Fonts subset which is smaller and faster
 async function loadNotoSansRegular(): Promise<ArrayBuffer | null> {
   try {
-    // Google Fonts API - smaller subset
     const fontUrl = 'https://fonts.gstatic.com/s/notosanssc/v37/k3kCo84MPvpLmixcA63oeAL7Iqp5IZJF9bmaG9_FnYxNbPzS5HE.woff2';
     const response = await fetch(fontUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0' },
@@ -98,13 +81,11 @@ async function loadNotoSansBold(): Promise<ArrayBuffer | null> {
 // Sanitize text - replace unsupported characters with safe alternatives
 function sanitizeText(text: string): string {
   return text
-    // Replace various dashes with standard em-dash
     .replace(/[⸺⸻—–-]+/g, ' — ')
-    // Replace other problematic Unicode punctuation
     .replace(/[""]/g, '"')
     .replace(/['']/g, "'")
     .replace(/…/g, '...')
-    .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' ') // Various Unicode spaces
+    .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' ')
     .trim();
 }
 
@@ -126,36 +107,27 @@ export async function GET(request: NextRequest) {
   const icon = searchParams.get('icon') || '';
   const avatar = searchParams.get('avatar') || '';
 
-  // Fix truncated Unsplash URLs - Ghost's encode doesn't encode & in URLs
-  // So &cs=tinysrgb becomes a separate parameter instead of part of the image URL
-  // Example: image=https://unsplash.com/photo?crop=entropy&cs=tinysrgb&fm=jpg
-  // Gets parsed as: image=https://unsplash.com/photo?crop=entropy, cs=tinysrgb, fm=jpg
+  // Fix truncated Unsplash URLs
   if (image.includes('images.unsplash.com')) {
-    // Check if URL looks truncated (has ? but likely missing other params)
     const unsplashParams: string[] = [];
     const knownUnsplashParams = ['crop', 'cs', 'fit', 'fm', 'ixid', 'ixlib', 'q', 'w', 'h'];
-
     for (const param of knownUnsplashParams) {
       const value = searchParams.get(param);
       if (value) {
         unsplashParams.push(`${param}=${value}`);
       }
     }
-
     if (unsplashParams.length > 0) {
-      // Reconstruct the URL - append missing params
       image = image + '&' + unsplashParams.join('&');
     }
   }
 
-  // Validate image URLs - check if they look valid and are supported formats
+  // Validate image URLs
   const isValidUrl = (url: string) => {
     if (!url) return false;
     try {
       const parsed = new URL(url);
-      // Must be http/https
       if (!['http:', 'https:'].includes(parsed.protocol)) return false;
-      // URL must not be truncated (check for common truncation patterns)
       if (url.endsWith('…') || url.endsWith('...') || url.length < 20) return false;
       return true;
     } catch {
@@ -163,27 +135,16 @@ export async function GET(request: NextRequest) {
     }
   };
 
-  // Check if image format is supported by @vercel/og (WebP is NOT supported)
-  // Ghost uses /format/jpeg/ in path to convert images, so check for that too
+  // Check if image format is supported by @vercel/og
   const isSupportedImageFormat = (url: string) => {
     if (!url) return false;
     const lowerUrl = url.toLowerCase();
-
-    // Ghost image processing: /format/jpeg/ or /format/png/ in path means it's converted
-    // Even if the original file was .webp, Ghost will serve it as jpeg/png
     if (lowerUrl.includes('/format/jpeg/') || lowerUrl.includes('/format/png/') || lowerUrl.includes('/format/jpg/')) {
       return true;
     }
-
-    // For non-Ghost URLs, check file extension
-    // WebP/AVIF are not supported by @vercel/og
     if (lowerUrl.match(/\.(webp|avif)(\?|$)/i)) return false;
-
-    // Check for supported formats
     const supportedExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
     const hasExtension = supportedExtensions.some(ext => lowerUrl.includes(ext));
-
-    // For URLs without clear extensions (like Unsplash with query params), assume okay
     return hasExtension || !lowerUrl.match(/\.(webp|avif|svg|bmp|tiff?)(\?|$)/i);
   };
 
@@ -210,7 +171,7 @@ export async function GET(request: NextRequest) {
     return '';
   }
 
-  // Pre-fetch all images in parallel and convert to base64 for reliable rendering
+  // Pre-fetch all images in parallel
   const [backgroundImageSrc, iconSrc, avatarSrc] = await Promise.all([
     fetchImageAsBase64(validImage),
     fetchImageAsBase64(validIcon),
@@ -223,11 +184,10 @@ export async function GET(request: NextRequest) {
   const excerpt = sanitizeText(rawExcerpt);
 
   const selectedTheme = themes[theme] || themes.dark;
-  const defaultBg = defaultBackgrounds[theme] || defaultBackgrounds.dark;
 
   // Truncate text for display
-  const displayTitle = title.length > 50 ? title.slice(0, 47) + '...' : title;
-  const displayExcerpt = excerpt.length > 60 ? excerpt.slice(0, 57) + '...' : excerpt;
+  const displayTitle = title.length > 60 ? title.slice(0, 57) + '...' : title;
+  const displayExcerpt = excerpt.length > 100 ? excerpt.slice(0, 97) + '...' : excerpt;
 
   // Load fonts
   const [fontRegular, fontBold] = await Promise.all([
@@ -235,8 +195,8 @@ export async function GET(request: NextRequest) {
     loadNotoSansBold(),
   ]);
 
-  // Calculate font size based on title length (scaled for 1600x840)
-  const titleFontSize = displayTitle.length > 35 ? 56 : displayTitle.length > 20 ? 68 : 80;
+  // Calculate font size based on title length
+  const titleFontSize = displayTitle.length > 40 ? 52 : displayTitle.length > 25 ? 60 : 72;
 
   // Build fonts array
   const fonts: { name: string; data: ArrayBuffer; style: 'normal'; weight: 400 | 700 }[] = [];
@@ -255,24 +215,12 @@ export async function GET(request: NextRequest) {
           height: '100%',
           display: 'flex',
           position: 'relative',
-          fontFamily: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
+          fontFamily: '"Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          background: selectedTheme.bgMain,
         }}
       >
-        {/* Background layer */}
-        {backgroundImageSrc ? (
-          <img
-            src={backgroundImageSrc}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
-            }}
-          />
-        ) : (
+        {/* Background image (if provided) - subtle, blurred */}
+        {backgroundImageSrc && (
           <div
             style={{
               position: 'absolute',
@@ -281,264 +229,317 @@ export async function GET(request: NextRequest) {
               right: 0,
               bottom: 0,
               display: 'flex',
-              background: defaultBg,
+              overflow: 'hidden',
             }}
-          />
+          >
+            <img
+              src={backgroundImageSrc}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center',
+                opacity: 0.15,
+                filter: 'blur(40px)',
+              }}
+            />
+          </div>
         )}
 
-        {/* Overlay gradient */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            background: selectedTheme.overlay,
-          }}
-        />
-
-        {/* Content container */}
+        {/* Main content area with padding */}
         <div
           style={{
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
             width: '100%',
             height: '100%',
-            padding: '64px 72px',
-            position: 'relative',
+            padding: '60px',
           }}
         >
-          {/* Top section: Site branding + Tag */}
+          {/* Card container - Attegi style */}
           <div
             style={{
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              flexDirection: 'row',
+              width: '100%',
+              height: '100%',
+              background: selectedTheme.cardBg,
+              borderRadius: '24px',
+              border: `1px solid ${selectedTheme.cardBorder}`,
+              overflow: 'hidden',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
             }}
           >
-            {/* Site branding */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '14px',
-              }}
-            >
-              {iconSrc ? (
-                <img
-                  src={iconSrc}
-                  width={52}
-                  height={52}
-                  style={{
-                    borderRadius: '12px',
-                    objectFit: 'cover',
-                    border: '2px solid rgba(255,255,255,0.2)',
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '52px',
-                    height: '52px',
-                    borderRadius: '12px',
-                    background: selectedTheme.tagBg,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '26px',
-                    fontWeight: 700,
-                    color: selectedTheme.textColor,
-                  }}
-                >
-                  {site.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <span
-                style={{
-                  fontSize: '28px',
-                  fontWeight: 600,
-                  color: selectedTheme.textColor,
-                  letterSpacing: '-0.3px',
-                  textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                }}
-              >
-                {site}
-              </span>
-            </div>
-
-            {/* Tag badge */}
-            {tag && (
+            {/* Left side - Feature image */}
+            {backgroundImageSrc && (
               <div
                 style={{
                   display: 'flex',
-                  padding: '12px 24px',
-                  borderRadius: '28px',
-                  background: selectedTheme.tagBg,
-                  color: selectedTheme.subtextColor,
-                  fontSize: '18px',
-                  fontWeight: 500,
-                  backdropFilter: 'blur(10px)',
+                  width: '45%',
+                  height: '100%',
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}
               >
-                {tag}
+                <img
+                  src={backgroundImageSrc}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                  }}
+                />
+                {/* Gradient overlay on image */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    background: theme === 'light'
+                      ? 'linear-gradient(to right, rgba(255,255,255,0) 60%, rgba(255,255,255,1) 100%)'
+                      : 'linear-gradient(to right, rgba(29,31,33,0) 60%, rgba(29,31,33,1) 100%)',
+                  }}
+                />
               </div>
             )}
-          </div>
 
-          {/* Middle section: Title and excerpt */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '18px',
-              flex: 1,
-              justifyContent: 'center',
-              paddingTop: '16px',
-              paddingBottom: '16px',
-            }}
-          >
-            <h1
+            {/* Right side - Content */}
+            <div
               style={{
-                fontSize: `${titleFontSize}px`,
-                fontWeight: 700,
-                color: selectedTheme.textColor,
-                lineHeight: 1.2,
-                margin: 0,
-                letterSpacing: '-0.5px',
-                textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                flex: 1,
+                padding: backgroundImageSrc ? '48px 56px 48px 32px' : '48px 56px',
+                minWidth: 0,
               }}
             >
-              {displayTitle}
-            </h1>
-
-            {displayExcerpt && (
-              <p
+              {/* Top: Site branding + Tags */}
+              <div
                 style={{
-                  fontSize: '24px',
-                  color: selectedTheme.subtextColor,
-                  lineHeight: 1.6,
-                  margin: 0,
-                  maxWidth: '85%',
-                  fontWeight: 400,
-                  textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '16px',
                 }}
               >
-                {displayExcerpt}
-              </p>
-            )}
-          </div>
+                {/* Site branding */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                  }}
+                >
+                  {iconSrc ? (
+                    <img
+                      src={iconSrc}
+                      width={40}
+                      height={40}
+                      style={{
+                        borderRadius: '10px',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '10px',
+                        background: selectedTheme.tagBg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: selectedTheme.textMain,
+                      }}
+                    >
+                      {site.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span
+                    style={{
+                      fontSize: '20px',
+                      fontWeight: 500,
+                      color: selectedTheme.textSecondary,
+                    }}
+                  >
+                    {site}
+                  </span>
+                </div>
 
-          {/* Bottom section: Meta info */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            {/* Author */}
-            {author && (
+                {/* Tag chip */}
+                {tag && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      background: selectedTheme.tagBg,
+                      color: selectedTheme.tagText,
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {tag}
+                  </div>
+                )}
+              </div>
+
+              {/* Middle: Title and excerpt */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  flex: 1,
+                  justifyContent: 'center',
+                  paddingTop: '24px',
+                  paddingBottom: '24px',
+                }}
+              >
+                <h1
+                  style={{
+                    fontSize: `${titleFontSize}px`,
+                    fontWeight: 700,
+                    color: selectedTheme.textLead,
+                    lineHeight: 1.2,
+                    margin: 0,
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  {displayTitle}
+                </h1>
+
+                {displayExcerpt && (
+                  <p
+                    style={{
+                      fontSize: '20px',
+                      color: selectedTheme.textSecondary,
+                      lineHeight: 1.6,
+                      margin: 0,
+                      fontWeight: 400,
+                    }}
+                  >
+                    {displayExcerpt}
+                  </p>
+                )}
+              </div>
+
+              {/* Bottom: Meta info */}
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '14px',
+                  justifyContent: 'space-between',
+                  borderTop: `1px solid ${selectedTheme.cardBorder}`,
+                  paddingTop: '20px',
                 }}
               >
-                {avatarSrc ? (
-                  <img
-                    src={avatarSrc}
-                    width={48}
-                    height={48}
-                    style={{
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid rgba(255,255,255,0.3)',
-                    }}
-                  />
-                ) : (
+                {/* Author */}
+                {author ? (
                   <div
                     style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      background: selectedTheme.tagBg,
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '20px',
-                      fontWeight: 600,
-                      color: selectedTheme.textColor,
+                      gap: '12px',
                     }}
                   >
-                    {author.charAt(0).toUpperCase()}
+                    {avatarSrc ? (
+                      <img
+                        src={avatarSrc}
+                        width={36}
+                        height={36}
+                        style={{
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          background: selectedTheme.tagBg,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: selectedTheme.textMain,
+                        }}
+                      >
+                        {author.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span
+                      style={{
+                        fontSize: '16px',
+                        fontWeight: 500,
+                        color: selectedTheme.textMain,
+                      }}
+                    >
+                      {author}
+                    </span>
                   </div>
+                ) : (
+                  <div style={{ display: 'flex' }} />
                 )}
-                <span
-                  style={{
-                    fontSize: '20px',
-                    fontWeight: 500,
-                    color: selectedTheme.textColor,
-                    textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  {author}
-                </span>
-              </div>
-            )}
 
-            {/* Date and reading time */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '24px',
-                marginLeft: 'auto',
-              }}
-            >
-              {date && (
-                <span
-                  style={{
-                    fontSize: '18px',
-                    color: selectedTheme.accentColor,
-                    fontWeight: 500,
-                    textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  {date}
-                </span>
-              )}
-              {reading && (
+                {/* Date and reading time */}
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '18px',
-                    color: selectedTheme.accentColor,
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap',
+                    gap: '20px',
                   }}
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <span>{reading}</span>
+                  {date && (
+                    <span
+                      style={{
+                        fontSize: '14px',
+                        color: selectedTheme.textSecondary,
+                        fontWeight: 400,
+                      }}
+                    >
+                      {date}
+                    </span>
+                  )}
+                  {reading && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '14px',
+                        color: selectedTheme.textSecondary,
+                        fontWeight: 400,
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={selectedTheme.textSecondary}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      <span>{reading}</span>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

@@ -12,6 +12,8 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState('/preview.png'); // Use static preview by default
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -35,6 +37,18 @@ export default function Home() {
     return `/api/og?${params.toString()}`;
   };
 
+  const generateUrlWithTimestamp = () => {
+    const params = new URLSearchParams();
+    if (title) params.set('title', title);
+    if (site) params.set('site', site);
+    if (excerpt) params.set('excerpt', excerpt);
+    if (author) params.set('author', author);
+    if (date) params.set('date', date);
+    if (image) params.set('image', image);
+    params.set('t', Date.now().toString());
+    return `/api/og?${params.toString()}`;
+  };
+
   const copyUrl = async () => {
     const fullUrl = window.location.origin + generateUrl();
     await navigator.clipboard.writeText(fullUrl);
@@ -42,10 +56,68 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setPreviewUrl(generateUrlWithTimestamp());
+    setTimeout(() => setIsGenerating(false), 1000);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isGenerating) {
+      handleGenerate();
+    }
+  };
+
   return (
     <>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap');
+
+        :root {
+          /* Light mode colors */
+          --bg-primary: #fff;
+          --bg-secondary: #fafafa;
+          --bg-nav: rgba(255, 255, 255, 0.9);
+          --bg-api: #000;
+          --text-primary: #000;
+          --text-secondary: #666;
+          --text-muted: #999;
+          --border-primary: #000;
+          --border-secondary: #eee;
+          --border-tertiary: #ddd;
+          --accent-color: #667eea;
+          --selection-bg: #000;
+          --selection-text: #fff;
+          --api-text-primary: #fff;
+          --api-text-secondary: #999;
+          --api-text-muted: #666;
+          --api-border: #333;
+          --api-card-bg: #000;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          :root {
+            /* Dark mode colors */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-nav: rgba(10, 10, 10, 0.9);
+            --bg-api: #141414;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a0a0a0;
+            --text-muted: #707070;
+            --border-primary: #f5f5f5;
+            --border-secondary: #2a2a2a;
+            --border-tertiary: #3a3a3a;
+            --accent-color: #8b9cf4;
+            --selection-bg: #f5f5f5;
+            --selection-text: #0a0a0a;
+            --api-text-primary: #f5f5f5;
+            --api-text-secondary: #a0a0a0;
+            --api-text-muted: #707070;
+            --api-border: #3a3a3a;
+            --api-card-bg: #1a1a1a;
+          }
+        }
 
         * {
           box-sizing: border-box;
@@ -54,20 +126,23 @@ export default function Home() {
         body {
           margin: 0;
           padding: 0;
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         ::selection {
-          background: #000;
-          color: #fff;
+          background: var(--selection-bg);
+          color: var(--selection-text);
         }
 
         input::placeholder {
-          color: #999;
+          color: var(--text-muted);
         }
 
         input:focus {
           outline: none;
-          border-color: #000 !important;
+          border-color: var(--text-primary) !important;
         }
 
         @keyframes fadeIn {
@@ -101,11 +176,12 @@ export default function Home() {
 
       <div style={{
         minHeight: '100vh',
-        background: '#fff',
-        color: '#000',
+        background: 'var(--bg-primary)',
+        color: 'var(--text-primary)',
         fontFamily: '"Inter", -apple-system, sans-serif',
         fontSize: '15px',
         lineHeight: 1.6,
+        transition: 'background-color 0.3s ease, color 0.3s ease',
       }}>
         {/* Navigation */}
         <nav style={{
@@ -114,9 +190,10 @@ export default function Home() {
           left: 0,
           right: 0,
           zIndex: 100,
-          background: 'rgba(255,255,255,0.9)',
+          background: 'var(--bg-nav)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid #eee',
+          borderBottom: '1px solid var(--border-secondary)',
+          transition: 'background-color 0.3s ease, border-color 0.3s ease',
         }}>
           <div style={{
             maxWidth: '1400px',
@@ -141,17 +218,17 @@ export default function Home() {
               fontFamily: '"JetBrains Mono", monospace',
               fontSize: '12px',
             }}>
-              <a href="#preview" className="desktop-only" style={{ color: '#666', textDecoration: 'none', transition: 'color 0.2s' }}>Preview</a>
-              <a href="#api" className="desktop-only" style={{ color: '#666', textDecoration: 'none', transition: 'color 0.2s' }}>API</a>
+              <a href="#preview" className="desktop-only" style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s' }}>Preview</a>
+              <a href="#api" className="desktop-only" style={{ color: 'var(--text-secondary)', textDecoration: 'none', transition: 'color 0.2s' }}>API</a>
               <a
                 href="https://github.com/bunizao/ogis"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  color: '#000',
+                  color: 'var(--text-primary)',
                   textDecoration: 'none',
                   padding: '8px 16px',
-                  border: '1px solid #000',
+                  border: '1px solid var(--border-primary)',
                   transition: 'all 0.2s',
                 }}
               >
@@ -184,7 +261,7 @@ export default function Home() {
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: '11px',
                 letterSpacing: '0.1em',
-                color: '#999',
+                color: 'var(--text-muted)',
                 marginBottom: '24px',
                 textTransform: 'uppercase',
               }}>
@@ -204,14 +281,14 @@ export default function Home() {
               </h1>
             </div>
             <div style={{
-              borderLeft: !isMobile ? '1px solid #eee' : 'none',
+              borderLeft: !isMobile ? '1px solid var(--border-secondary)' : 'none',
               paddingLeft: !isMobile ? '40px' : '0',
               paddingTop: !isMobile ? '0' : '20px',
-              borderTop: !isMobile ? 'none' : '1px solid #eee',
+              borderTop: !isMobile ? 'none' : '1px solid var(--border-secondary)',
             }}>
               <p style={{
                 fontSize: '16px',
-                color: '#666',
+                color: 'var(--text-secondary)',
                 lineHeight: 1.7,
                 margin: 0,
                 maxWidth: '400px',
@@ -225,7 +302,7 @@ export default function Home() {
                 gap: '12px',
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: '10px',
-                color: '#999',
+                color: 'var(--text-muted)',
                 flexWrap: 'wrap',
               }}>
                 <span>1200×630px</span>
@@ -246,7 +323,7 @@ export default function Home() {
           margin: '0 auto',
           padding: '0 24px',
         }}>
-          <div style={{ height: '1px', background: '#000' }} />
+          <div style={{ height: '1px', background: 'var(--border-primary)' }} />
         </div>
 
         {/* Main Content */}
@@ -275,21 +352,21 @@ export default function Home() {
                   fontWeight: 500,
                   letterSpacing: '0.15em',
                   textTransform: 'uppercase',
-                  color: '#999',
+                  color: 'var(--text-muted)',
                   marginBottom: '40px',
                 }}>
                   Parameters
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <InputField label="Title" value={title} onChange={setTitle} required />
-                  <InputField label="Site" value={site} onChange={setSite} required />
-                  <InputField label="Excerpt" value={excerpt} onChange={setExcerpt} />
+                  <InputField label="Title" value={title} onChange={setTitle} required onKeyPress={handleKeyPress} />
+                  <InputField label="Site" value={site} onChange={setSite} required onKeyPress={handleKeyPress} />
+                  <InputField label="Excerpt" value={excerpt} onChange={setExcerpt} onKeyPress={handleKeyPress} />
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <InputField label="Author" value={author} onChange={setAuthor} />
-                    <InputField label="Date" value={date} onChange={setDate} />
+                    <InputField label="Author" value={author} onChange={setAuthor} onKeyPress={handleKeyPress} />
+                    <InputField label="Date" value={date} onChange={setDate} onKeyPress={handleKeyPress} />
                   </div>
-                  <InputField label="Image URL" value={image} onChange={setImage} />
+                  <InputField label="Image URL" value={image} onChange={setImage} onKeyPress={handleKeyPress} />
                 </div>
 
                 {/* URL Output */}
@@ -306,7 +383,7 @@ export default function Home() {
                       fontWeight: 500,
                       letterSpacing: '0.15em',
                       textTransform: 'uppercase',
-                      color: '#999',
+                      color: 'var(--text-muted)',
                     }}>
                       Endpoint
                     </span>
@@ -315,7 +392,7 @@ export default function Home() {
                       style={{
                         fontFamily: '"JetBrains Mono", monospace',
                         fontSize: '11px',
-                        color: copied ? '#000' : '#999',
+                        color: copied ? 'var(--text-primary)' : 'var(--text-muted)',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
@@ -329,12 +406,13 @@ export default function Home() {
                   <div style={{
                     fontFamily: '"JetBrains Mono", monospace',
                     fontSize: '12px',
-                    color: '#666',
+                    color: 'var(--text-secondary)',
                     padding: '16px',
-                    background: '#fafafa',
-                    border: '1px solid #eee',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-secondary)',
                     wordBreak: 'break-all',
                     lineHeight: 1.6,
+                    transition: 'background-color 0.3s ease, border-color 0.3s ease',
                   }}>
                     {generateUrl()}
                   </div>
@@ -350,25 +428,47 @@ export default function Home() {
                 fontWeight: 500,
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
-                color: '#999',
+                color: 'var(--text-muted)',
                 marginBottom: '40px',
               }}>
                 Preview
               </h2>
 
               <div style={{
+                marginBottom: '24px',
+                padding: '16px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-secondary)',
+                borderRadius: '4px',
+                transition: 'background-color 0.3s ease, border-color 0.3s ease',
+              }}>
+                <p style={{
+                  margin: 0,
+                  fontSize: '12px',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.6,
+                  fontFamily: '"JetBrains Mono", monospace',
+                }}>
+                  💡 Tip: Modify parameters above, then click "Generate Preview" to see changes
+                </p>
+              </div>
+
+              <div style={{
                 position: 'relative',
                 background: '#000',
-                padding: '32px',
+                aspectRatio: '1200/630',
+                overflow: 'hidden',
               }}>
                 <img
-                  src={generateUrl()}
+                  src={previewUrl}
                   alt="OG Preview"
                   style={{
                     width: '100%',
-                    height: 'auto',
+                    height: '100%',
                     display: 'block',
+                    objectFit: 'cover',
                   }}
+                  loading="lazy"
                 />
               </div>
 
@@ -377,41 +477,62 @@ export default function Home() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                gap: '12px',
+                flexWrap: 'wrap',
               }}>
                 <span style={{
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '11px',
-                  color: '#999',
+                  color: 'var(--text-muted)',
                 }}>
                   1200 × 630
                 </span>
-                <a
-                  href={generateUrl()}
-                  target="_blank"
-                  style={{
-                    fontFamily: '"JetBrains Mono", monospace',
-                    fontSize: '12px',
-                    color: '#000',
-                    textDecoration: 'none',
-                    padding: '12px 24px',
-                    border: '1px solid #000',
-                    transition: 'all 0.2s',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#000';
-                    e.currentTarget.style.color = '#fff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#000';
-                  }}
-                >
-                  Open Full Size
-                  <span style={{ fontSize: '14px' }}>↗</span>
-                </a>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={handleGenerate}
+                    style={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: '12px',
+                      color: isGenerating ? 'var(--text-muted)' : 'var(--text-primary)',
+                      background: 'transparent',
+                      textDecoration: 'none',
+                      padding: '12px 24px',
+                      border: '1px solid ' + (isGenerating ? 'var(--border-tertiary)' : 'var(--border-primary)'),
+                      cursor: isGenerating ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Preview'}
+                  </button>
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    style={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: '12px',
+                      color: 'var(--text-primary)',
+                      textDecoration: 'none',
+                      padding: '12px 24px',
+                      border: '1px solid var(--border-primary)',
+                      transition: 'all 0.2s',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--text-primary)';
+                      e.currentTarget.style.color = 'var(--bg-primary)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                    }}
+                  >
+                    Open Full Size
+                    <span style={{ fontSize: '14px' }}>↗</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -419,9 +540,10 @@ export default function Home() {
 
         {/* API Reference */}
         <section id="api" style={{
-          background: '#000',
-          color: '#fff',
+          background: 'var(--bg-api)',
+          color: 'var(--api-text-primary)',
           padding: !isMobile ? '120px 24px' : '60px 24px',
+          transition: 'background-color 0.3s ease',
         }}>
           <div style={{
             maxWidth: '1400px',
@@ -445,7 +567,7 @@ export default function Home() {
                 </h2>
                 <p style={{
                   marginTop: '24px',
-                  color: '#666',
+                  color: 'var(--api-text-muted)',
                   fontSize: '15px',
                   lineHeight: 1.7,
                 }}>
@@ -455,10 +577,10 @@ export default function Home() {
                 <div style={{
                   marginTop: '32px',
                   padding: '16px',
-                  border: '1px solid #333',
+                  border: '1px solid var(--api-border)',
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: !isMobile ? '12px' : '10px',
-                  color: '#999',
+                  color: 'var(--api-text-secondary)',
                   wordBreak: 'break-all',
                 }}>
                   GET /api/og?title=...&site=...
@@ -469,7 +591,7 @@ export default function Home() {
                 display: 'grid',
                 gridTemplateColumns: !isMobile ? 'repeat(2, 1fr)' : '1fr',
                 gap: '1px',
-                background: '#333',
+                background: 'var(--api-border)',
               }}>
                 <ParamCard name="title" type="string" required description="Article title (max 60 chars)" />
                 <ParamCard name="site" type="string" required description="Site name for branding" />
@@ -489,8 +611,8 @@ export default function Home() {
               {/* Demo Notice */}
               <div style={{
                 padding: '24px 32px',
-                border: '1px solid #333',
-                background: 'rgba(102, 126, 234, 0.05)',
+                border: '1px solid var(--api-border)',
+                background: 'rgba(102, 126, 234, 0.08)',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '16px',
@@ -498,7 +620,7 @@ export default function Home() {
                 <span style={{
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '11px',
-                  color: '#667eea',
+                  color: 'var(--accent-color)',
                   flexShrink: 0,
                   fontWeight: 500,
                 }}>
@@ -507,16 +629,16 @@ export default function Home() {
                 <p style={{
                   margin: 0,
                   fontSize: '14px',
-                  color: '#999',
+                  color: 'var(--api-text-secondary)',
                   lineHeight: 1.7,
                 }}>
-                  This is a demo site for demonstration purposes only. For production use, please{' '}
+                  This is a demo site for demonstration purposes only. Preview images are cached and only regenerated when you click "Generate Preview". For production use, please{' '}
                   <a
                     href="https://github.com/bunizao/ogis#deployment"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      color: '#667eea',
+                      color: 'var(--accent-color)',
                       textDecoration: 'underline',
                     }}
                   >
@@ -529,7 +651,7 @@ export default function Home() {
               {/* Technical Note */}
               <div style={{
                 padding: '24px 32px',
-                border: '1px solid #333',
+                border: '1px solid var(--api-border)',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '16px',
@@ -537,7 +659,7 @@ export default function Home() {
                 <span style={{
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '11px',
-                  color: '#666',
+                  color: 'var(--api-text-muted)',
                   flexShrink: 0,
                 }}>
                   NOTE
@@ -545,7 +667,7 @@ export default function Home() {
                 <p style={{
                   margin: 0,
                   fontSize: '14px',
-                  color: '#999',
+                  color: 'var(--api-text-secondary)',
                   lineHeight: 1.7,
                 }}>
                   WebP, AVIF, and SVG formats are not supported due to Edge Runtime constraints.
@@ -559,7 +681,8 @@ export default function Home() {
         {/* Footer */}
         <footer style={{
           padding: '32px 24px',
-          borderTop: '1px solid #eee',
+          borderTop: '1px solid var(--border-secondary)',
+          transition: 'border-color 0.3s ease',
         }}>
           <div style={{
             maxWidth: '1400px',
@@ -579,11 +702,11 @@ export default function Home() {
               <span style={{
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: '11px',
-                color: '#999',
+                color: 'var(--text-muted)',
               }}>
                 Built with Next.js 14 · @vercel/og
               </span>
-              <span style={{ color: '#ddd' }}>·</span>
+              <span style={{ color: 'var(--border-tertiary)' }}>·</span>
               <a
                 href="https://github.com/bunizao/ogis"
                 target="_blank"
@@ -591,20 +714,20 @@ export default function Home() {
                 style={{
                   fontFamily: '"JetBrains Mono", monospace',
                   fontSize: '11px',
-                  color: '#666',
+                  color: 'var(--text-secondary)',
                   textDecoration: 'none',
                   transition: 'color 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#000'}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#666'}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
               >
                 GitHub
               </a>
-              <span style={{ color: '#ddd' }}>·</span>
+              <span style={{ color: 'var(--border-tertiary)' }}>·</span>
               <span style={{
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: '11px',
-                color: '#999',
+                color: 'var(--text-muted)',
               }}>
                 MIT License
               </span>
@@ -612,7 +735,7 @@ export default function Home() {
             <span style={{
               fontFamily: '"JetBrains Mono", monospace',
               fontSize: '11px',
-              color: '#999',
+              color: 'var(--text-muted)',
             }}>
               © 2026 bunizao
             </span>
@@ -627,12 +750,14 @@ function InputField({
   label,
   value,
   onChange,
-  required
+  required,
+  onKeyPress
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   required?: boolean;
+  onKeyPress?: (e: React.KeyboardEvent) => void;
 }) {
   return (
     <div>
@@ -644,14 +769,14 @@ function InputField({
         fontSize: '11px',
         fontWeight: 500,
         letterSpacing: '0.05em',
-        color: '#000',
+        color: 'var(--text-primary)',
         marginBottom: '8px',
       }}>
         {label}
         {required && (
           <span style={{
             fontSize: '10px',
-            color: '#999',
+            color: 'var(--text-muted)',
             fontWeight: 400,
           }}>
             required
@@ -662,16 +787,17 @@ function InputField({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyPress={onKeyPress}
         style={{
           width: '100%',
           padding: '14px 0',
           background: 'transparent',
           border: 'none',
-          borderBottom: '1px solid #ddd',
-          color: '#000',
+          borderBottom: '1px solid var(--border-tertiary)',
+          color: 'var(--text-primary)',
           fontSize: '15px',
           fontFamily: 'inherit',
-          transition: 'border-color 0.2s',
+          transition: 'border-color 0.2s, color 0.3s ease',
         }}
       />
     </div>
@@ -692,7 +818,8 @@ function ParamCard({
   return (
     <div style={{
       padding: '32px',
-      background: '#000',
+      background: 'var(--api-card-bg)',
+      transition: 'background-color 0.3s ease',
     }}>
       <div style={{
         display: 'flex',
@@ -704,7 +831,7 @@ function ParamCard({
           fontFamily: '"JetBrains Mono", monospace',
           fontSize: '14px',
           fontWeight: 500,
-          color: '#fff',
+          color: 'var(--api-text-primary)',
         }}>
           {name}
         </code>
@@ -716,8 +843,8 @@ function ParamCard({
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
             padding: '4px 8px',
-            border: '1px solid #444',
-            color: '#666',
+            border: '1px solid var(--api-border)',
+            color: 'var(--api-text-muted)',
           }}>
             Required
           </span>
@@ -726,7 +853,7 @@ function ParamCard({
       <div style={{
         fontFamily: '"JetBrains Mono", monospace',
         fontSize: '11px',
-        color: '#666',
+        color: 'var(--api-text-muted)',
         marginBottom: '12px',
       }}>
         {type}
@@ -734,7 +861,7 @@ function ParamCard({
       <p style={{
         margin: 0,
         fontSize: '13px',
-        color: '#999',
+        color: 'var(--api-text-secondary)',
         lineHeight: 1.6,
       }}>
         {description}

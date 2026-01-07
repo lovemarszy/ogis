@@ -1,18 +1,19 @@
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
+import fs from 'fs/promises';
+import path from 'path';
 
-export const runtime = 'edge';
+// 运行时切换为 nodejs
+export const runtime = 'nodejs';
 
-// 改为加载本地字体文件
-async function loadZpixFont(baseUrl: string): Promise<ArrayBuffer | null> {
+// 使用 Node.js 的 fs 模块从服务器磁盘直接读取字体
+async function loadZpixFont(): Promise<ArrayBuffer | null> {
   try {
-    // 使用 import.meta.url 准确定位项目内部资源
-    const fontUrl = new URL('../../../public/fonts/zpix.ttf', import.meta.url);
-    const response = await fetch(fontUrl);
-    if (!response.ok) return null;
-    return await response.arrayBuffer();
+    const fontPath = path.join(process.cwd(), 'public/fonts/zpix.ttf');
+    const fontData = await fs.readFile(fontPath);
+    return fontData.buffer;
   } catch (e) {
-    console.error('Failed to load local font:', e);
+    console.error('Failed to load local font from disk:', e);
     return null;
   }
 }
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     }
   };
 
-  // Check if image format is supported by @vercel/og
+  // Check if image format is supported
   const isSupportedImageFormat = (url: string) => {
     if (!url) return false;
     const lowerUrl = url.toLowerCase();
@@ -119,8 +120,8 @@ export async function GET(request: NextRequest) {
   const displayTitle = title.length > 60 ? title.slice(0, 57) + '...' : title;
   const displayExcerpt = excerpt.length > 80 ? excerpt.slice(0, 77) + '...' : excerpt;
 
-  // 传递 baseUrl 给加载函数
-  const zpixFont = await loadZpixFont(baseUrl);
+  // 调用 loadZpixFont 不再需要 baseUrl
+  const zpixFont = await loadZpixFont();
 
   const titleFontSize = displayTitle.length > 40 ? 56 : displayTitle.length > 25 ? 72 : 88;
 
@@ -270,7 +271,6 @@ export async function GET(request: NextRequest) {
       height: 630,
       fonts: fonts.length > 0 ? fonts : undefined,
       headers: {
-        // 浏览器缓存 1 小时，CDN 缓存 1 天
         'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
       },
     }

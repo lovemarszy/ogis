@@ -3,16 +3,16 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-// Load Zpix pixel font (TTF format - required by @vercel/og)
-async function loadZpixFont(): Promise<ArrayBuffer | null> {
+// 改为加载本地字体文件
+async function loadZpixFont(baseUrl: string): Promise<ArrayBuffer | null> {
   try {
-    const fontUrl = 'https://cdn.jsdelivr.net/gh/SolidZORO/zpix-pixel-font@v3.1.10/dist/zpix.ttf';
-    const response = await fetch(fontUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-    });
+    // 使用 import.meta.url 准确定位项目内部资源
+    const fontUrl = new URL('../../../public/fonts/zpix.ttf', import.meta.url);
+    const response = await fetch(fontUrl);
     if (!response.ok) return null;
     return await response.arrayBuffer();
-  } catch {
+  } catch (e) {
+    console.error('Failed to load local font:', e);
     return null;
   }
 }
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   const date = searchParams.get('date') || '';
   const rawExcerpt = searchParams.get('excerpt') || '';
   let image = searchParams.get('image') || '';
-  const tag = searchParams.get('tag') || ''; // ✨ 获取标签参数
+  const tag = searchParams.get('tag') || ''; 
   
   // Fix truncated Unsplash URLs
   if (image.includes('images.unsplash.com')) {
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     return '';
   }
 
-  // Pre-fetch background image (user-provided or default starry sky)
+  // Pre-fetch background image
   const imageToFetch = validImage || `${baseUrl}/default-bg.jpg`;
   const backgroundImageSrc = await fetchImageAsBase64(imageToFetch);
 
@@ -116,19 +116,14 @@ export async function GET(request: NextRequest) {
   const site = sanitizeText(rawSite);
   const excerpt = sanitizeText(rawExcerpt);
 
-  // Truncate title for display - allow longer titles
   const displayTitle = title.length > 60 ? title.slice(0, 57) + '...' : title;
-
-  // Truncate excerpt for display
   const displayExcerpt = excerpt.length > 80 ? excerpt.slice(0, 77) + '...' : excerpt;
 
-  // Load fonts - Zpix pixel font (single font supports both Latin and CJK)
-  const zpixFont = await loadZpixFont();
+  // 传递 baseUrl 给加载函数
+  const zpixFont = await loadZpixFont(baseUrl);
 
-  // Calculate font size based on title length - larger sizes for impact
   const titleFontSize = displayTitle.length > 40 ? 56 : displayTitle.length > 25 ? 72 : 88;
 
-  // Build fonts array - Zpix for pixel style
   const fonts: { name: string; data: ArrayBuffer; style: 'normal'; weight: 400 | 700 }[] = [];
   if (zpixFont) {
     fonts.push({ name: 'Zpix', data: zpixFont, style: 'normal', weight: 400 });
@@ -146,7 +141,6 @@ export async function GET(request: NextRequest) {
           background: '#0a0a0a',
         }}
       >
-        {/* Background image - full cover (always present: user image or default starry sky) */}
         <img
           src={backgroundImageSrc}
           style={{
@@ -160,7 +154,6 @@ export async function GET(request: NextRequest) {
           }}
         />
 
-{/* 采用固定高度 + 手动基线修正 */}
         {tag && (
           <div
             style={{
@@ -168,27 +161,25 @@ export async function GET(request: NextRequest) {
               top: '48px',
               right: '64px',
               display: 'flex',
-              height: '48px',            // 1. 使用固定高度
-              padding: '0 24px',         // 2. 移除上下 padding，只留左右
+              height: '48px',
+              padding: '0 24px',
               alignItems: 'center',
               justifyContent: 'center',
               background: 'rgba(255, 255, 255, 0.12)',
               backdropFilter: 'blur(12px)',
-              borderRadius: '24px',      // 高度的一半，保持胶囊形状
+              borderRadius: '24px',
               border: '1px solid rgba(255, 255, 255, 0.2)',
               fontSize: '22px',
               color: '#fff',
               zIndex: 10,
             }}
           >
-            {/* 手动向下压 4-6 像素 */}
             <span style={{ display: 'flex', paddingTop: '4px' }}>
               {tag}
             </span>
           </div>
         )}
 
-        {/* Enhanced frosted glass overlay - covers lower portion */}
         <div
           style={{
             position: 'absolute',
@@ -202,7 +193,6 @@ export async function GET(request: NextRequest) {
           }}
         />
 
-        {/* Content container - positioned at bottom left */}
         <div
           style={{
             position: 'absolute',
@@ -214,7 +204,6 @@ export async function GET(request: NextRequest) {
             zIndex: 2,
           }}
         >
-          {/* Site name - top of content block */}
           <span
             style={{
               fontSize: '24px',
@@ -227,7 +216,6 @@ export async function GET(request: NextRequest) {
             {site}
           </span>
 
-          {/* Title - prominent, large */}
           <h1
             style={{
               fontSize: `${titleFontSize}px`,
@@ -242,7 +230,6 @@ export async function GET(request: NextRequest) {
             {displayTitle}
           </h1>
 
-          {/* Excerpt - secondary text */}
           {displayExcerpt && (
             <p
               style={{
@@ -259,7 +246,6 @@ export async function GET(request: NextRequest) {
             </p>
           )}
 
-          {/* Meta info - author and date, subtle */}
           {(author || date) && (
             <div
               style={{
@@ -284,7 +270,8 @@ export async function GET(request: NextRequest) {
       height: 630,
       fonts: fonts.length > 0 ? fonts : undefined,
       headers: {
-        'Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
+        // 浏览器缓存 1 小时，CDN 缓存 1 天
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
       },
     }
   );

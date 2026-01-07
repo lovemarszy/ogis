@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
           }}
         />
 
-{/* ✨ 优化居中对齐 */}
+{/* 采用固定高度 + 手动基线修正 */}
         {tag && (
           <div
             style={{
@@ -168,20 +168,23 @@ export async function GET(request: NextRequest) {
               top: '48px',
               right: '64px',
               display: 'flex',
-              alignItems: 'center',      // 垂直居中
-              justifyContent: 'center',  // 水平居中
-              padding: '10px 24px',      // 略微增加边距让气泡更饱满
+              height: '48px',            // 1. 使用固定高度
+              padding: '0 24px',         // 2. 移除上下 padding，只留左右
+              alignItems: 'center',
+              justifyContent: 'center',
               background: 'rgba(255, 255, 255, 0.12)',
               backdropFilter: 'blur(12px)',
-              borderRadius: '100px',
+              borderRadius: '24px',      // 高度的一半，保持胶囊形状
               border: '1px solid rgba(255, 255, 255, 0.2)',
               fontSize: '22px',
               color: '#fff',
-              lineHeight: 1,             // 强制行高为 1
               zIndex: 10,
             }}
           >
-            {tag}
+            {/* 手动向下压 4-6 像素 */}
+            <span style={{ display: 'flex', paddingTop: '4px' }}>
+              {tag}
+            </span>
           </div>
         )}
 

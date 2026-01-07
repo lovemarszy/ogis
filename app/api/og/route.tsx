@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
           }}
         />
 
-        {/* ✨ 右上角标签展示 */}
+{/* ✨ 优化居中对齐 */}
         {tag && (
           <div
             style={{
@@ -168,13 +168,16 @@ export async function GET(request: NextRequest) {
               top: '48px',
               right: '64px',
               display: 'flex',
-              padding: '8px 20px',
-              background: 'rgba(255, 255, 255, 0.12)', // 半透明白
-              backdropFilter: 'blur(12px)',           // 毛玻璃效果
-              borderRadius: '100px',                  // 胶囊形状
+              alignItems: 'center',      // 垂直居中
+              justifyContent: 'center',  // 水平居中
+              padding: '10px 24px',      // 略微增加边距让气泡更饱满
+              background: 'rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '100px',
               border: '1px solid rgba(255, 255, 255, 0.2)',
               fontSize: '22px',
               color: '#fff',
+              lineHeight: 1,             // 强制行高为 1
               zIndex: 10,
             }}
           >

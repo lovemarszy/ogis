@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   const date = searchParams.get('date') || '';
   const rawExcerpt = searchParams.get('excerpt') || '';
   let image = searchParams.get('image') || '';
-  const tag = searchParams.get('tag') || ''; // ✨ 
+  const tag = searchParams.get('tag') || ''; // ✨ 获取标签参数
   
   // Fix truncated Unsplash URLs
   if (image.includes('images.unsplash.com')) {
@@ -159,6 +159,28 @@ export async function GET(request: NextRequest) {
             objectPosition: 'center',
           }}
         />
+
+        {/* ✨ 右上角标签展示 */}
+        {tag && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '48px',
+              right: '64px',
+              display: 'flex',
+              padding: '8px 20px',
+              background: 'rgba(255, 255, 255, 0.12)', // 半透明白
+              backdropFilter: 'blur(12px)',           // 毛玻璃效果
+              borderRadius: '100px',                  // 胶囊形状
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              fontSize: '22px',
+              color: '#fff',
+              zIndex: 10,
+            }}
+          >
+            #{tag}
+          </div>
+        )}
 
         {/* Enhanced frosted glass overlay - covers lower portion */}
         <div

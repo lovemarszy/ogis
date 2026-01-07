@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
   const date = searchParams.get('date') || '';
   const rawExcerpt = searchParams.get('excerpt') || '';
   let image = searchParams.get('image') || '';
-
+  const tag = searchParams.get('tag') || ''; // ✨ 
+  
   // Fix truncated Unsplash URLs
   if (image.includes('images.unsplash.com')) {
     const unsplashParams: string[] = [];

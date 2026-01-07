@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
               zIndex: 10,
             }}
           >
-            #{tag}
+            {tag}
           </div>
         )}
 

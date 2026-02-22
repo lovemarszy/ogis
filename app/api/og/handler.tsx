@@ -11,8 +11,11 @@ const themes = {
 };
 
 const securityConfig = resolveOgSecurityConfig();
+const signatureSecret = securityConfig.signatureSecret;
+const hasSignatureProtection = securityConfig.hasSignatureProtection;
 
-// 文本清洗逻辑
+// --- 安全校验核心工具函数 (同步原项目算法) ---
+
 function sanitizeText(text: string | null): string {
   if (!text) return '';
   return text
@@ -24,25 +27,68 @@ function sanitizeText(text: string | null): string {
     .trim();
 }
 
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+function canonicalizeSearchParams(searchParams: URLSearchParams): string {
+  const entries: Array<[string, string]> = [];
+  searchParams.forEach((value, key) => {
+    if (key === 'sig') return; // 排除签名本身
+    entries.push([key, value]);
+  });
+  entries.sort((a, b) => (a[0] < b[0] ? -1 : 1)); // 参数排序确保哈希一致
+  return entries
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+}
+
+async function signPayload(payload: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(signatureSecret);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signed = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(payload));
+  return Array.from(new Uint8Array(signed))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function hasValidSignature(requestUrl: URL): Promise<boolean> {
+  if (!hasSignatureProtection) return true;
+
+  const providedSig = (requestUrl.searchParams.get('sig') ?? '').trim();
+  if (!providedSig) return false;
+
+  const canonicalQuery = canonicalizeSearchParams(requestUrl.searchParams);
+  const payload = canonicalQuery || '__empty__';
+  const expectedSig = await signPayload(payload);
+
+  return constantTimeEqual(expectedSig, providedSig);
+}
+
+// --- 主处理函数 ---
+
 export async function handleOgGet(request: NextRequest, routeKey: string): Promise<Response> {
   const requestUrl = new URL(request.url);
-  const { searchParams } = requestUrl;
-  const baseUrl = requestUrl.origin;
-
-  // 【核心修复】：引入安全校验逻辑
-  if (securityConfig.hasSignatureProtection) {
-    const sig = searchParams.get('sig');
-    
-    // 如果开启了保护但请求里没有 sig 参数，直接拦截
-    if (!sig) {
-      return new Response('Missing Signature: Protection is enabled but no signature was provided.', { status: 403 });
-    }
-
-    // 注意：目前这里只校验了 sig 是否存在。
-    // 如果你需要验证 sig 是否“正确”（即 HMAC 校验），
-    // 建议在生产环境稳定后，再引入原项目脚本生成的完整校验逻辑。
+  
+  // 【真正的安全锁】：校验签名是否匹配私钥
+  if (!(await hasValidSignature(requestUrl))) {
+    return new Response('Invalid or Missing Signature', { status: 403 });
   }
 
+  const { searchParams } = requestUrl;
+  const baseUrl = requestUrl.origin;
   const themeContext = { searchParams, baseUrl };
   const theme = themes.pixel;
 
@@ -71,6 +117,6 @@ export async function handleOgGet(request: NextRequest, routeKey: string): Promi
     );
   } catch (error) {
     console.error('OG Image generation failed:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response('Internal Error', { status: 500 });
   }
 }

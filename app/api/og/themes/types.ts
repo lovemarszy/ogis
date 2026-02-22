@@ -8,14 +8,15 @@ export interface ThemeProps {
   author?: string;
   date?: string;
   backgroundImageSrc: string;
-  tag?: string; // 必须有这一行
+  tag?: string;
 }
 
 export interface ThemeFont {
   name: string;
   data: ArrayBuffer;
   style: 'normal' | 'italic';
-  weight: number;
+  // 修正：将 number 改为具体的字面量联合类型，以匹配 @vercel/og 的要求
+  weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
 }
 
 export interface ThemeContext {

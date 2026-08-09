@@ -25,22 +25,22 @@ npm start
 ## Architecture
 
 ### Core Technology Stack
-- **Next.js 14** with App Router
-- **Edge Runtime** for fast, globally distributed image generation
+- **Next.js 16** with App Router
+- **Node.js 24 Runtime** for local font loading and image generation
 - **@vercel/og** (Satori) for React-based image rendering
 - **TypeScript** with strict mode enabled
 
 ### Key Files
-- `app/api/og/route.tsx` - Main OG image generation endpoint (Edge function)
-- `app/api/debug/route.ts` - Debug endpoint for testing
+- `app/api/og/route.tsx` - Main OG image generation endpoint (Node.js function)
+- `app/api/og/handler.tsx` - Request validation, authentication, and image response handling
 - `next.config.js` - Next.js configuration (minimal)
 - `tsconfig.json` - TypeScript configuration with path aliases (`@/*`)
 
 ### Image Generation Flow
 
 1. **Request Handling**: GET request to `/api/og` with URL parameters
-2. **Font Loading**: Fetch Zpix pixel font (TTF format) from jsdelivr CDN
-3. **Image Pre-fetching**: Background and icon images are fetched and converted to base64 data URIs to ensure reliable rendering
+2. **Font Loading**: Read the bundled Zpix pixel font (TTF format) from `public/fonts`
+3. **Image Pre-fetching**: Remote background images are validated, size-limited, fetched, and converted to base64 data URIs
 4. **Text Sanitization**: Special characters (em dashes, smart quotes, etc.) are normalized
 5. **Dynamic Rendering**: React JSX is rendered to PNG using Satori with responsive font sizing
 6. **Caching**: CDN-friendly cache headers (24h s-maxage, 7d stale-while-revalidate)
@@ -60,15 +60,15 @@ npm start
 
 ### Font System
 
-The service uses **Zpix** pixel font for a retro pixel aesthetic:
+The service uses the bundled **Zpix** pixel font for a retro pixel aesthetic:
 - **Zpix** - A pixel-style font supporting Latin, Chinese, Japanese, and Korean characters
-- Font is loaded from jsdelivr CDN (`cdn.jsdelivr.net/gh/SolidZORO/zpix-pixel-font`)
+- Font is loaded from `public/fonts/zpix.ttf`
 
 **Important**: @vercel/og only supports TTF/OTF formats, NOT woff2. The font family stack is: `"Zpix", sans-serif`
 
 ### Image Handling
 
-**Critical Implementation Detail**: All external images (background and icon) MUST be pre-fetched and converted to base64 data URIs before rendering. Direct URL references in the JSX will fail in production due to Edge runtime restrictions.
+**Critical Implementation Detail**: External images are pre-fetched and converted to base64 data URIs before rendering. The fetch path only accepts public HTTPS hosts and enforces redirect, timeout, content-type, and response-size limits.
 
 The `fetchImageAsBase64()` function:
 - Fetches images with a custom User-Agent
@@ -93,17 +93,13 @@ The OG card uses a minimalist "subtle frosted glass" aesthetic inspired by moder
 - **Layout**: Bottom-aligned content with site branding (small square icon + name), large title, and optional metadata
 - **Responsive sizing**: Title font size adjusts based on character count (48px for long, 64px for short)
 
-### Edge Runtime Constraints
+### Runtime Constraints
 
-This service runs on Vercel's Edge Runtime, which has limitations:
-- No Node.js APIs (fs, path, etc.)
-- No native modules
-- Limited to Web APIs and Edge-compatible packages
-- All external resources must be fetched at runtime
+This service runs on Vercel's Node.js Runtime because the bundled font is loaded with `fs`. Keep the deployment runtime on Node.js 24 and do not change the route to Edge without replacing the font-loading strategy.
 
 ## Deployment
 
-Designed for Vercel deployment with automatic Edge function detection. The `export const runtime = 'edge'` declaration in `route.tsx` enables Edge Runtime.
+Designed for Vercel deployment. The `export const runtime = 'nodejs'` declaration in `route.tsx` is required for local font loading.
 
 ## Cache Strategy
 

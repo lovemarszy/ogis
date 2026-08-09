@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
   title: 'OGIS - Open Graph Image Service',
-  description: 'A dynamic Open Graph image generation service built with Next.js 14 and deployed on Vercel Edge Runtime. Creates customized social media preview images with Zpix pixel font and frosted glass effects.',
-  keywords: ['og image', 'open graph', 'social media', 'preview', 'image generation', 'edge runtime', 'next.js', 'vercel', 'zpix'],
+  description: 'A dynamic Open Graph image generation service built with Next.js 16 and deployed on the Vercel Node.js Runtime. Creates customized social media preview images with Zpix pixel font and frosted glass effects.',
+  keywords: ['og image', 'open graph', 'social media', 'preview', 'image generation', 'node.js runtime', 'next.js', 'vercel', 'zpix'],
   authors: [{ name: 'bunizao', url: 'https://github.com/bunizao' }],
   icons: {
     icon: '/favicon.svg',

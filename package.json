@@ -5,15 +5,25 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "typegen": "next typegen",
+    "typecheck": "npm run typegen && tsc --noEmit",
+    "test": "node --import tsx --test 'app/**/*.test.ts'",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "engines": {
+    "node": ">=24 <25"
   },
   "dependencies": {
-    "@vercel/og": "^0.6.3",
-    "next": "^14.2.0"
+    "@vercel/og": "^1.0.1",
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.0.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "tsx": "^4.23.11",
+    "typescript": "^5.9.3"
   }
 }

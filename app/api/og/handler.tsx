@@ -2,6 +2,7 @@
 
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
+import { fetchRemoteImageAsDataUrl } from '@/app/lib/og-image';
 import { resolveOgSecurityConfig } from '@/app/lib/og-security';
 import { pixelTheme } from './themes/pixel';
 import type { ThemeProps } from './themes/types';
@@ -25,6 +26,14 @@ function sanitizeText(text: string | null): string {
     .replace(/…/g, '...')
     .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' ')
     .trim();
+}
+
+function readTextParam(
+  searchParams: URLSearchParams,
+  key: string,
+  maxLength: number
+): string {
+  return sanitizeText(searchParams.get(key)).slice(0, maxLength);
 }
 
 function constantTimeEqual(a: string, b: string): boolean {
@@ -92,14 +101,31 @@ export async function handleOgGet(request: NextRequest, routeKey: string): Promi
   const themeContext = { searchParams, baseUrl };
   const theme = themes.pixel;
 
+  const title = readTextParam(searchParams, 'title', 60);
+  const site = readTextParam(searchParams, 'site', 80);
+  if (!title || !site) {
+    return new Response('Missing required title or site parameter', { status: 400 });
+  }
+
+  let backgroundImageSrc = `${baseUrl}/default-bg.jpg`;
+  const requestedImage = searchParams.get('image');
+  if (requestedImage) {
+    try {
+      backgroundImageSrc = await fetchRemoteImageAsDataUrl(requestedImage);
+    } catch (error) {
+      console.warn('Rejected remote OG background image:', error);
+      return new Response('Invalid or unavailable image URL', { status: 400 });
+    }
+  }
+
   const props: ThemeProps = {
-    title: sanitizeText(searchParams.get('title')),
-    site: sanitizeText(searchParams.get('site')),
-    excerpt: sanitizeText(searchParams.get('excerpt')),
-    author: searchParams.get('author') || '',
-    date: searchParams.get('date') || '',
-    tag: searchParams.get('tag') || '',
-    backgroundImageSrc: searchParams.get('image') || `${baseUrl}/default-bg.jpg`,
+    title,
+    site,
+    excerpt: readTextParam(searchParams, 'excerpt', 80),
+    author: readTextParam(searchParams, 'author', 60),
+    date: readTextParam(searchParams, 'date', 32),
+    tag: readTextParam(searchParams, 'tag', 40),
+    backgroundImageSrc,
   };
 
   try {

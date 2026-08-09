@@ -1,11 +1,11 @@
 # OGIS - OG Image Service
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)](https://vercel.com)
 
-Dynamic Open Graph (OG) image generation service for blogs and websites. Built with Next.js 14 and deployed on Vercel Edge Runtime for fast, globally distributed image generation.
+Dynamic Open Graph (OG) image generation service for blogs and websites. Built with Next.js 16 and deployed on the Vercel Node.js Runtime.
 
 **Demo**: https://og.tutuis.me
 
@@ -18,7 +18,7 @@ Dynamic Open Graph (OG) image generation service for blogs and websites. Built w
 - **Pixel Font Aesthetic** - Zpix pixel font for retro, distinctive look
 - **Frosted Glass Effect** - Enhanced readability with backdrop blur overlay
 - **Responsive Typography** - Dynamic font sizing based on title length
-- **Edge Runtime** - Fast generation with global CDN caching
+- **CDN Caching** - Generated images use Vercel-compatible cache headers
 - **CJK Support** - Full support for Chinese, Japanese, and Korean characters
 
 ## Deploy to Vercel
@@ -29,9 +29,11 @@ Dynamic Open Graph (OG) image generation service for blogs and websites. Built w
 
 ## Local Development
 
+Node.js 24 is required.
+
 ```bash
-# Install dependencies
-npm install
+# Install locked dependencies
+npm ci
 
 # Start development server
 npm run dev
@@ -59,7 +61,7 @@ GET /api/og
 | `excerpt` | string | No | Article excerpt (max 80 chars) | `A brief description...` |
 | `author` | string | No | Author name | `John Doe` |
 | `date` | string | No | Publication date | `2025-01-05` |
-| `image` | string | No | Background image URL | `https://...` |
+| `image` | string | No | Public HTTPS background image URL (PNG/JPG/GIF, max 8 MiB) | `https://...` |
 
 ### Example Request
 
@@ -138,8 +140,8 @@ For other frameworks and platforms, set `og:image` meta tags to the generated UR
 
 ## Technical Stack
 
-- **Framework**: Next.js 14 with App Router
-- **Runtime**: Vercel Edge Runtime
+- **Framework**: Next.js 16 with App Router
+- **Runtime**: Vercel Node.js Runtime (Node.js 24)
 - **Image Generation**: @vercel/og (Satori)
 - **Language**: TypeScript
 - **Deployment**: Vercel
@@ -148,7 +150,8 @@ For other frameworks and platforms, set `og:image` meta tags to the generated UR
 
 - **Supported Image Formats**: PNG, JPG, JPEG, GIF
 - **Unsupported Formats**: WebP, AVIF, SVG (limitation of @vercel/og)
-- **Image Pre-fetching**: All images converted to base64 for reliable rendering
+- **Image Pre-fetching**: Remote images are validated and converted to base64 for reliable rendering
+- **Remote Image Safety**: Only public HTTPS hosts are accepted; private networks, custom ports, oversized responses, and slow responses are rejected
 
 ## Customization
 

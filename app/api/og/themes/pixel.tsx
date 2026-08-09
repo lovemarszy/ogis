@@ -70,7 +70,6 @@ function render(props: ThemeProps, context: ThemeContext): React.ReactElement {
             border: '1px solid rgba(255, 255, 255, 0.2)',
             fontSize: '22px', // 字号复原
             color: '#fff',
-            zIndex: 10,
           }}
         >
           {/* 复原：为了像素字体垂直居中的 4px 偏移 */}
@@ -102,7 +101,6 @@ function render(props: ThemeProps, context: ThemeContext): React.ReactElement {
           right: '64px',
           display: 'flex',
           flexDirection: 'column',
-          zIndex: 2,
         }}
       >
         {/* 复原：站点名称间距 */}

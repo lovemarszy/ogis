@@ -294,7 +294,7 @@ export default function Home() {
                 maxWidth: '400px',
               }}>
                 A dynamic Open Graph image generation service with Zpix pixel font and frosted glass effects.
-                Built on Next.js 14 and Vercel Edge Runtime for fast, globally distributed generation.
+                Built on Next.js 16 and the Vercel Node.js Runtime for reliable image generation.
               </p>
               <div style={{
                 marginTop: '24px',
@@ -309,7 +309,7 @@ export default function Home() {
                 <span>·</span>
                 <span>Zpix Font</span>
                 <span>·</span>
-                <span>Edge Runtime</span>
+                <span>Node.js Runtime</span>
                 <span>·</span>
                 <span>MIT License</span>
               </div>
@@ -670,7 +670,7 @@ export default function Home() {
                   color: 'var(--api-text-secondary)',
                   lineHeight: 1.7,
                 }}>
-                  WebP, AVIF, and SVG formats are not supported due to Edge Runtime constraints.
+                  WebP, AVIF, and SVG formats are not supported by the image renderer.
                   Use PNG, JPG, JPEG, or GIF for background images.
                 </p>
               </div>
@@ -704,7 +704,7 @@ export default function Home() {
                 fontSize: '11px',
                 color: 'var(--text-muted)',
               }}>
-                Built with Next.js 14 · @vercel/og
+                Built with Next.js 16 · @vercel/og
               </span>
               <span style={{ color: 'var(--border-tertiary)' }}>·</span>
               <a

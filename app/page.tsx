@@ -671,7 +671,7 @@ export default function Home() {
                   lineHeight: 1.7,
                 }}>
                   WebP, AVIF, and SVG formats are not supported by the image renderer.
-                  Use PNG, JPG, JPEG, or GIF for background images.
+                  Use PNG, JPG, JPEG, GIF, or WebP for background images.
                 </p>
               </div>
             </div>

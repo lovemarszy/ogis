@@ -44,9 +44,13 @@ test('converts a supported image response to a data URL', async () => {
   assert.equal(result, 'data:image/png;base64,AQID');
 });
 
-test('keeps a WebP image response as binary data', async () => {
+test('decodes a WebP response for the image renderer', async () => {
+  const webp = Buffer.from(
+    'UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA',
+    'base64'
+  );
   const fetchImpl = (async () =>
-    new Response(new Uint8Array([1, 2, 3]), {
+    new Response(webp, {
       headers: { 'content-type': 'image/webp' },
     })) as typeof fetch;
 
@@ -54,8 +58,7 @@ test('keeps a WebP image response as binary data', async () => {
     dnsLookup: publicDns,
     fetchImpl,
   });
-  assert.ok(result instanceof ArrayBuffer);
-  assert.deepEqual(Array.from(new Uint8Array(result)), [1, 2, 3]);
+  assert.match(result, /^data:image\/png;base64,iVBORw0KGgo/);
 });
 
 test('rejects redirects to private networks', async () => {

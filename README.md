@@ -14,7 +14,7 @@ Dynamic Open Graph (OG) image generation service for blogs and websites. Built w
 ## Features
 
 - **Beautiful Default Background** - Stunning starry sky image when no background is provided
-- **Custom Background Support** - Use your own images (PNG, JPG, JPEG, GIF)
+- **Custom Background Support** - Use your own images (PNG, JPG, JPEG, GIF, WebP)
 - **Pixel Font Aesthetic** - Zpix pixel font for retro, distinctive look
 - **Frosted Glass Effect** - Enhanced readability with backdrop blur overlay
 - **Responsive Typography** - Dynamic font sizing based on title length
@@ -148,9 +148,9 @@ For other frameworks and platforms, set `og:image` meta tags to the generated UR
 
 ## Notes
 
-- **Supported Image Formats**: PNG, JPG, JPEG, GIF
-- **Unsupported Formats**: WebP, AVIF, SVG (limitation of @vercel/og)
-- **Image Pre-fetching**: Remote images are validated and converted to base64 for reliable rendering
+- **Supported Image Formats**: PNG, JPG, JPEG, GIF, WebP
+- **Unsupported Formats**: AVIF, SVG
+- **Image Pre-fetching**: Remote images are validated and converted to renderer-compatible in-memory data; WebP source files remain unchanged
 - **Remote Image Safety**: Only public HTTPS hosts are accepted; private networks, custom ports, oversized responses, and slow responses are rejected
 
 ## Customization

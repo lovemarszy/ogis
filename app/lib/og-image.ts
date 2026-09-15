@@ -1,7 +1,9 @@
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
+import sharp from 'sharp';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_IMAGE_PIXELS = 40_000_000;
 const MAX_REDIRECTS = 3;
 const FETCH_TIMEOUT_MS = 8_000;
 
@@ -151,7 +153,7 @@ async function readLimitedBody(response: Response): Promise<Uint8Array> {
 export async function fetchRemoteImageSource(
   input: string,
   options: RemoteImageOptions = {}
-): Promise<string | ArrayBuffer> {
+): Promise<string> {
   let currentUrl = input;
   const dnsLookup = options.dnsLookup ?? defaultLookup;
   const fetchImpl = options.fetchImpl ?? fetch;
@@ -192,7 +194,10 @@ export async function fetchRemoteImageSource(
     }
 
     const body = await readLimitedBody(response);
-    if (contentType === 'image/webp') return body.buffer as ArrayBuffer;
+    if (contentType === 'image/webp') {
+      const png = await sharp(body, { limitInputPixels: MAX_IMAGE_PIXELS }).png().toBuffer();
+      return `data:image/png;base64,${png.toString('base64')}`;
+    }
     return `data:${contentType};base64,${Buffer.from(body).toString('base64')}`;
   }
 

@@ -40,7 +40,7 @@ function render(props: ThemeProps, context: ThemeContext): React.ReactElement {
       }}
     >
       <img
-        src={backgroundImageSrc as string}
+        src={backgroundImageSrc}
         style={{
           position: 'absolute',
           top: 0,

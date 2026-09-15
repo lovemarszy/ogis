@@ -54,9 +54,9 @@ npm start
 | `excerpt` | string | No | Article excerpt/subtitle (truncated at 80 chars) |
 | `author` | string | No | Author name |
 | `date` | string | No | Publication date |
-| `image` | string | No | Background image URL (must be PNG/JPG/JPEG/GIF) |
+| `image` | string | No | Background image URL (must be PNG/JPG/JPEG/GIF/WebP) |
 
-**Note**: WebP, AVIF, and SVG formats are NOT supported by @vercel/og and will be filtered out.
+**Note**: AVIF and SVG formats are filtered out. WebP is supported by the current `@vercel/og` version.
 
 ### Font System
 
@@ -80,7 +80,7 @@ The `fetchImageAsBase64()` function:
 
 The service includes special handling for:
 - **Unsplash URLs**: Reconstructs truncated query parameters from URL search params
-- **Format validation**: Checks for supported image formats (PNG, JPG, JPEG, GIF)
+- **Format validation**: Checks for supported image formats (PNG, JPG, JPEG, GIF, WebP)
 - **Protocol validation**: Only allows http/https protocols
 - **Truncation detection**: Rejects URLs ending with `…` or `...`
 

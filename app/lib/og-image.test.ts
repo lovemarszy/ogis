@@ -44,6 +44,19 @@ test('converts a supported image response to a data URL', async () => {
   assert.equal(result, 'data:image/png;base64,AQID');
 });
 
+test('converts a WebP image response to a data URL', async () => {
+  const fetchImpl = (async () =>
+    new Response(new Uint8Array([1, 2, 3]), {
+      headers: { 'content-type': 'image/webp' },
+    })) as typeof fetch;
+
+  const result = await fetchRemoteImageAsDataUrl('https://example.com/a.webp', {
+    dnsLookup: publicDns,
+    fetchImpl,
+  });
+  assert.equal(result, 'data:image/webp;base64,AQID');
+});
+
 test('rejects redirects to private networks', async () => {
   const fetchImpl = (async () =>
     new Response(null, {

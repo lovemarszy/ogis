@@ -9,6 +9,7 @@ const SUPPORTED_IMAGE_TYPES = new Set([
   'image/gif',
   'image/jpeg',
   'image/png',
+  'image/webp',
 ]);
 
 export type DnsLookup = (
@@ -160,7 +161,7 @@ export async function fetchRemoteImageAsDataUrl(
     const response = await fetchImpl(url, {
       cache: 'force-cache',
       headers: {
-        Accept: 'image/png,image/jpeg,image/gif',
+        Accept: 'image/png,image/jpeg,image/gif,image/webp',
         'User-Agent': 'OGIS/1.0',
       },
       redirect: 'manual',

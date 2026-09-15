@@ -61,7 +61,7 @@ GET /api/og
 | `excerpt` | string | No | Article excerpt (max 80 chars) | `A brief description...` |
 | `author` | string | No | Author name | `John Doe` |
 | `date` | string | No | Publication date | `2025-01-05` |
-| `image` | string | No | Public HTTPS background image URL (PNG/JPG/GIF, max 8 MiB) | `https://...` |
+| `image` | string | No | Public HTTPS background image URL (PNG/JPG/GIF/WebP, max 8 MiB) | `https://...` |
 
 ### Example Request
 

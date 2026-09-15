@@ -2,7 +2,7 @@
 
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
-import { fetchRemoteImageAsDataUrl } from '@/app/lib/og-image';
+import { fetchRemoteImageSource } from '@/app/lib/og-image';
 import { resolveOgSecurityConfig } from '@/app/lib/og-security';
 import { pixelTheme } from './themes/pixel';
 import type { ThemeProps } from './themes/types';
@@ -107,11 +107,11 @@ export async function handleOgGet(request: NextRequest, routeKey: string): Promi
     return new Response('Missing required title or site parameter', { status: 400 });
   }
 
-  let backgroundImageSrc = `${baseUrl}/default-bg.jpg`;
+  let backgroundImageSrc: ThemeProps['backgroundImageSrc'] = `${baseUrl}/default-bg.jpg`;
   const requestedImage = searchParams.get('image');
   if (requestedImage) {
     try {
-      backgroundImageSrc = await fetchRemoteImageAsDataUrl(requestedImage);
+      backgroundImageSrc = await fetchRemoteImageSource(requestedImage);
     } catch (error) {
       console.warn('Rejected remote OG background image:', error);
       return new Response('Invalid or unavailable image URL', { status: 400 });

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   assertSafeRemoteImageUrl,
-  fetchRemoteImageAsDataUrl,
+  fetchRemoteImageSource,
   type DnsLookup,
 } from './og-image';
 
@@ -37,24 +37,25 @@ test('converts a supported image response to a data URL', async () => {
       headers: { 'content-type': 'image/png' },
     })) as typeof fetch;
 
-  const result = await fetchRemoteImageAsDataUrl('https://example.com/a.png', {
+  const result = await fetchRemoteImageSource('https://example.com/a.png', {
     dnsLookup: publicDns,
     fetchImpl,
   });
   assert.equal(result, 'data:image/png;base64,AQID');
 });
 
-test('converts a WebP image response to a data URL', async () => {
+test('keeps a WebP image response as binary data', async () => {
   const fetchImpl = (async () =>
     new Response(new Uint8Array([1, 2, 3]), {
       headers: { 'content-type': 'image/webp' },
     })) as typeof fetch;
 
-  const result = await fetchRemoteImageAsDataUrl('https://example.com/a.webp', {
+  const result = await fetchRemoteImageSource('https://example.com/a.webp', {
     dnsLookup: publicDns,
     fetchImpl,
   });
-  assert.equal(result, 'data:image/webp;base64,AQID');
+  assert.ok(result instanceof ArrayBuffer);
+  assert.deepEqual(Array.from(new Uint8Array(result)), [1, 2, 3]);
 });
 
 test('rejects redirects to private networks', async () => {
@@ -65,7 +66,7 @@ test('rejects redirects to private networks', async () => {
     })) as typeof fetch;
 
   await assert.rejects(() =>
-    fetchRemoteImageAsDataUrl('https://example.com/a.png', {
+    fetchRemoteImageSource('https://example.com/a.png', {
       dnsLookup: publicDns,
       fetchImpl,
     })
@@ -78,7 +79,7 @@ test('rejects unsupported and oversized image responses', async () => {
       headers: { 'content-type': 'text/plain' },
     })) as typeof fetch;
   await assert.rejects(() =>
-    fetchRemoteImageAsDataUrl('https://example.com/a.png', {
+    fetchRemoteImageSource('https://example.com/a.png', {
       dnsLookup: publicDns,
       fetchImpl: unsupportedFetch,
     })
@@ -92,7 +93,7 @@ test('rejects unsupported and oversized image responses', async () => {
       },
     })) as typeof fetch;
   await assert.rejects(() =>
-    fetchRemoteImageAsDataUrl('https://example.com/a.png', {
+    fetchRemoteImageSource('https://example.com/a.png', {
       dnsLookup: publicDns,
       fetchImpl: oversizedFetch,
     })

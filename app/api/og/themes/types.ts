@@ -7,7 +7,7 @@ export interface ThemeProps {
   excerpt?: string;
   author?: string;
   date?: string;
-  backgroundImageSrc: string;
+  backgroundImageSrc: string | ArrayBuffer;
   tag?: string;
 }
 

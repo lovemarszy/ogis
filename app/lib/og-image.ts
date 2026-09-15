@@ -148,10 +148,10 @@ async function readLimitedBody(response: Response): Promise<Uint8Array> {
   return body;
 }
 
-export async function fetchRemoteImageAsDataUrl(
+export async function fetchRemoteImageSource(
   input: string,
   options: RemoteImageOptions = {}
-): Promise<string> {
+): Promise<string | ArrayBuffer> {
   let currentUrl = input;
   const dnsLookup = options.dnsLookup ?? defaultLookup;
   const fetchImpl = options.fetchImpl ?? fetch;
@@ -192,6 +192,7 @@ export async function fetchRemoteImageAsDataUrl(
     }
 
     const body = await readLimitedBody(response);
+    if (contentType === 'image/webp') return body.buffer as ArrayBuffer;
     return `data:${contentType};base64,${Buffer.from(body).toString('base64')}`;
   }
 

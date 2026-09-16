@@ -137,7 +137,7 @@ function render(props: ThemeProps, context: ThemeContext): React.ReactElement {
             style={{
               fontSize: '26px',
               fontWeight: 400,
-              color: 'rgba(255, 255, 255, 0.75)',
+              color: 'rgba(255, 255, 255, 0.88)',
               lineHeight: 1.5,
               margin: 0,
               textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
@@ -156,7 +156,7 @@ function render(props: ThemeProps, context: ThemeContext): React.ReactElement {
               alignItems: 'center',
               gap: '16px',
               fontSize: '20px',
-              color: 'rgba(255, 255, 255, 0.55)',
+              color: 'rgba(255, 255, 255, 0.72)',
               textShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
             }}
           >

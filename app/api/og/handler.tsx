@@ -36,6 +36,10 @@ function readTextParam(
   return sanitizeText(searchParams.get(key)).slice(0, maxLength);
 }
 
+function formatDate(date: string): string {
+  return date.replace(/\s*[—-]\s*/g, '.');
+}
+
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let mismatch = 0;
@@ -123,7 +127,7 @@ export async function handleOgGet(request: NextRequest, routeKey: string): Promi
     site,
     excerpt: readTextParam(searchParams, 'excerpt', 80),
     author: readTextParam(searchParams, 'author', 60),
-    date: readTextParam(searchParams, 'date', 32),
+    date: formatDate(readTextParam(searchParams, 'date', 32)),
     tag: readTextParam(searchParams, 'tag', 40),
     backgroundImageSrc,
   };
